@@ -112,7 +112,7 @@ void loop()
         float ec_val = EC.get_last_received_reading();
         float rtd_val = RTD.get_last_received_reading();
         
-        snprintf(timestamp, sizeof(timestamp), "%04d-%02d-%02d,%02d:%02d:%02d");
+        snprintf(timestamp, sizeof(timestamp), "%04d-%02d-%02d,%02d:%02d:%02d", now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second());
         snprintf(newCsvRow, sizeof(newCsvRow), "%s,%.3f,%.3f,%.3f,%.3f,%.3f\n",
              timestamp,
              orp_val,

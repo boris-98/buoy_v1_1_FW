@@ -31,14 +31,14 @@ void prepareTxFrame(uint8_t port, char *timestamp, float orp_val, float ph_val, 
         timestamp, orp_val, ph_val, do_val, ec_val, rtd_val);
     
     appDataSize = sizeof(payload);  // PROVERI KOLIKO ISPADNE
-
+    memcpy(&appData, &payload, sizeof(payload));
+/*
     uint8_t index = 0;
-
     memcpy(&appData[index], &timestamp, sizeof(timestamp));  index += sizeof(timestamp);
     memcpy(&appData[index], &orp_val, sizeof(orp_val));  index += sizeof(orp_val);
     memcpy(&appData[index], &ph_val, sizeof(ph_val));  index += sizeof(ph_val);
     memcpy(&appData[index], &do_val, sizeof(do_val));  index += sizeof(do_val);
     memcpy(&appData[index], &ec_val, sizeof(ec_val));  index += sizeof(ec_val);
     memcpy(&appData[index], &rtd_val, sizeof(rtd_val));  index += sizeof(rtd_val);
-
+*/
 }
