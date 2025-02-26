@@ -1,5 +1,7 @@
 #include "BG95.h"
 
+HardwareSerial BG95_Serial(1);
+
 bool getBG95response(char command[], char exp_response[], char response[], uint32_t timeout)
 {
   uint8_t count = 0;

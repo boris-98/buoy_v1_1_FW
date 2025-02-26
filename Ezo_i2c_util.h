@@ -3,8 +3,35 @@
 #define EZO_I2C_UTIL_H
 
 #include "Arduino.h"
-
 #include "Ezo_i2c.h"
+
+//============================================================================//
+// My Ezo_i2c_util part
+//----------------------------------------------------------------------------//
+// Atlas sensors addresses
+#define I2C_ADDRESS_DO  97
+#define I2C_ADDRESS_ORP 98
+#define I2C_ADDRESS_PH  99
+#define I2C_ADDRESS_EC  100
+#define I2C_ADDRESS_RTD 102
+
+extern Ezo_board DO;
+extern Ezo_board ORP;
+extern Ezo_board PH;
+extern Ezo_board EC;
+extern Ezo_board RTD;
+
+void calibration_call_delay(unsigned long timeout_millis);
+void calibrate_sensors();
+void DO_calibration();
+void ORP_calibration();
+void PH_calibration();
+void EC_calibration();
+void RTD_calibration();
+//----------------------------------------------------------------------------//
+//============================================================================//
+
+// rest of Ezo_i2c_util example...
 
 // these are common functions used by Atlas Scientific Ezo sample code
 // for printing various responses and info 

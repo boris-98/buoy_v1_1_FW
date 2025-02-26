@@ -2,8 +2,13 @@
 #define __BG95
 
 #include <Arduino.h>
+#include <HardwareSerial.h>
 
-#define NBIOT_STREAM  Serial2
+// BG95 module UART pins
+#define BG95_TX_PIN 2
+#define BG95_RX_PIN 0
+
+#define NBIOT_STREAM  BG95_Serial
 #define DEBUG_STREAM  Serial
 
 #define BG95_PWRKEY 33
@@ -25,6 +30,8 @@
 #define APN_USER  ""
 #define APN_PASS  ""
 #endif
+
+extern HardwareSerial BG95_Serial;
 
 bool BG95_turnOn();
 bool BG95_testIfAlive();
