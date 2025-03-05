@@ -5,8 +5,8 @@
 #include <HardwareSerial.h>
 
 // BG95 module UART pins
-#define BG95_TX_PIN 2
-#define BG95_RX_PIN 0
+#define BG95_TX_PIN 23
+#define BG95_RX_PIN 22
 
 #define NBIOT_STREAM  BG95_Serial
 #define DEBUG_STREAM  Serial
@@ -16,13 +16,13 @@
 #define SERVER_IP "ENTER_SERVER_IP"
 #define UDP_PORT  50070
 
-//#define _TELENOR_SRB
-#define _A1
+#define _TELEKOM_MTS
+//#define _A1
 
-#ifdef _TELENOR_SRB
-#define APN      "internet"
-#define APN_USER  "telenor"
-#define APN_PASS  "gprs"
+#ifdef _TELEKOM_MTS
+#define APN      "mtsiot"
+#define APN_USER  ""
+#define APN_PASS  ""
 #endif
 
 #ifdef _A1

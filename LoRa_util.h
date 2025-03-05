@@ -39,6 +39,6 @@ extern uint8_t appPort;
 extern uint8_t confirmedNbTrials;
 
 /* Prepares the payload of the frame */
-void prepareTxFrame( uint8_t port, char *timestamp, float orp_val, float ph_val, float do_val, float ec_val, float rtd_val );
+void prepareTxFrame( uint8_t port, char *payload);
 
 #endif

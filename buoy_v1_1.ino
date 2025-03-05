@@ -5,6 +5,14 @@
 #include "SD_util.h"
 #include "DS3231M_util.h"
 
+float orp_val;
+float ph_val;
+float do_val;
+float ec_val;
+float rtd_val;
+uint32_t timestamp;
+char newCsvRow[128];
+char payload[128];
 
 void setup() 
 {
@@ -24,7 +32,7 @@ void setup()
 
   // BG95 test - comment out the following 2 lines if nothing works
   //while(!BG95_turnOn());  // SET BG95 RESET PIN NUMBER (BG95_PWRKEY) IN BG95.h
-  BG95_testIfAlive();
+  //BG95_testIfAlive();
   //BG95_nwkRegister(); // if BG95 is alive, use this to attach to the network
 
   calibration_call_delay(5000);   // fenseraj koji ceka proizvoljan broj sekundi da korisnik unese 'c' ako hoce kalibraciju (moze se izmeniti na taster)
@@ -73,47 +81,55 @@ void loop()
       {
         Serial.println("JOIN state");
         LoRaWAN.join();
+        
         break;
       }
     case DEVICE_STATE_SEND:
       {
         Serial.println("SEND state");
-
         // read all senzors
         // DODATI ZA I2C SWITCHER PALJENJE POJEDINACNIH MAGISTRALA PRE GADJANJA SVAKOG SENZORA
         ORP.send_read_cmd();  // sensor needs 900ms for the reading, according to the datasheet 
-        delay(900);
+        delay(800);
         receive_and_print_reading(ORP);
 
+        delay(50);
+
         PH.send_read_cmd();   // 900ms
-        delay(900);
+        delay(800);
         receive_and_print_reading(PH);
+
+        delay(50);
 
         DO.send_read_cmd();   // 600ms 
         delay(600);
         receive_and_print_reading(DO);    
 
+        delay(50);
+
+        RTD.send_read_cmd();  // 600ms
+        delay(1000);          
+        receive_and_print_reading(RTD);
+
+        delay(50);
+
         EC.send_read_cmd();   // 600ms
         delay(600);
         receive_and_print_reading(EC);
 
-        RTD.send_read_cmd();  // 600ms
-        delay(600);          
-        receive_and_print_reading(RTD);
-
-        // prepare a new csv row for the readings:
-        // YY-MM-DD | HH-MM-SS | ORP | PH | DO | EC | RTD  
-        char newCsvRow[128];
-        char timestamp[19];
+        // prepare the readings for local/remove saving
         DateTime now = DS3231M.now();  // get the current time
-        float orp_val = ORP.get_last_received_reading();
-        float ph_val = PH.get_last_received_reading();
-        float do_val = DO.get_last_received_reading();
-        float ec_val = EC.get_last_received_reading();
-        float rtd_val = RTD.get_last_received_reading();
+        orp_val = ORP.get_last_received_reading();
+        ph_val = PH.get_last_received_reading();
+        do_val = DO.get_last_received_reading();
+        ec_val = EC.get_last_received_reading();
+        rtd_val = RTD.get_last_received_reading();
+        // Bolje ovako kao ispod pa da se salje UTC u sekundama kao polje (format poruke: <sto_si_vec_imao>,sent_time=timestamp)
+        timestamp = now.unixtime();
         
-        snprintf(timestamp, sizeof(timestamp), "%04d-%02d-%02d,%02d:%02d:%02d", now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second());
-        snprintf(newCsvRow, sizeof(newCsvRow), "%s,%.3f,%.3f,%.3f,%.3f,%.3f\n",
+        // prepare a new csv row with the readings:
+        // UNIX_UTC | ORP | PH | DO | EC | RTD  
+        snprintf(newCsvRow, sizeof(newCsvRow), "%d,%.3f,%.3f,%.3f,%.3f,%.3f\n",
              timestamp,
              orp_val,
              ph_val,
@@ -121,15 +137,19 @@ void loop()
              ec_val,
              rtd_val);
 
+        // prepare a payload for LoRa & NB-IoT with the readings
+        snprintf(payload, sizeof(payload), "nbiot_test,board=buoyV1_1,packet=udp ORP=%.3f,PH=%.3f,DO=%.3f,EC=%.3f,RTD=%.3f,UNIXUTC=%d",
+            orp_val, ph_val, do_val, ec_val, rtd_val, timestamp);
+
         // save the new readings to the SD card
         appendFile(SD, filePath, newCsvRow); 
 
         // send the readings via LoRa
-        prepareTxFrame(appPort, timestamp, orp_val, ph_val, do_val, ec_val, rtd_val);
-        LoRaWAN.send();    
+        prepareTxFrame(appPort, payload);
+        LoRaWAN.send();  
 
         // send the readings via NB-IoT
-        // DODAJ SLANJE PREKO BG95 (samo da se napravi payload i posalje)  
+        //BG95_TxRxUDP(payload, SERVER_IP, UDP_PORT); 
 
         deviceState = DEVICE_STATE_CYCLE;
         break;
@@ -141,6 +161,7 @@ void loop()
         txDutyCycleTime = appTxDutyCycle + randr(-APP_TX_DUTYCYCLE_RND, APP_TX_DUTYCYCLE_RND);
         LoRaWAN.cycle(txDutyCycleTime);
         deviceState = DEVICE_STATE_SLEEP;
+         
         Serial.println("Going to SLEEP state");
         break;
       }

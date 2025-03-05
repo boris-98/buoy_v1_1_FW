@@ -22,13 +22,9 @@ uint8_t appPort = 2;
 uint8_t confirmedNbTrials = 4;
 
 // Function to prepare LoRaWAN transmission frame
-void prepareTxFrame(uint8_t port, char *timestamp, float orp_val, float ph_val, float do_val, float ec_val, float rtd_val) {
+void prepareTxFrame(uint8_t port, char *payload) {
     // appData je definisan kao uint8_t tj. niz bajtova
     // njegova maks. velicina je definisana 242
-    char payload[128];
-
-    snprintf(payload, sizeof(payload), "nbiot_test,board=buoyV1_1,packet=udp timestamp=%s,ORP=%.3f,PH=%.3f,DO=%.3f,EC=%.3f,RTD=%.3f",
-        timestamp, orp_val, ph_val, do_val, ec_val, rtd_val);
     
     appDataSize = sizeof(payload);  // PROVERI KOLIKO ISPADNE
     memcpy(&appData, &payload, sizeof(payload));

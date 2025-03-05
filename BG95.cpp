@@ -88,13 +88,18 @@ bool BG95_nwkRegister()
   if (!getBG95response("AT+CMEE=2\r\n", "OK", response, 5000))
     return false;
 
-  //scan sequence: first Cat-M1, then NB-IoT, then GSM
-  if (!getBG95response("AT+QCFG=\"nwscanseq\",020301,1\r\n", "OK", response, 1000)) // 02 -> CatM1; 03 -> NMIoT; 01 -> GSM
+  if (!getBG95response("AT+QCFG=\"servicedomain\",1,1\r\n", "OK", response, 1000))
     return false;
+  // Configure pref. band to LTE_EUTRAN_BAND20
+	if (!getBG95response("AT+QCFG=\"band\",0,0,80000\r\n", "OK", response, 1000))	// 0 -> no change, for GSM&CatM1, 0x80000 -> NB-IoT band20
+	  return false;
+  //scan sequence: first NB-IoT, then Cat-M1, then GSM
+	if (!getBG95response("AT+QCFG=\"nwscanseq\",030201,1\r\n", "OK", response, 1000)) // 03 -> NBIoT; 02 -> CatM1; 01 -> GSM
+	  return false;
   //Automatic (GSM and LTE)
   if (!getBG95response("AT+QCFG=\"nwscanmode\",0,1\r\n", "OK", response, 1000))
     return false;
-  //Network category to be searched under LTE RAT: Cat-M1
+  //Network category to be searched under LTE RAT: CatM1&NBIoT
   if (!getBG95response("AT+QCFG=\"iotopmode\",2,1\r\n", "OK", response, 1000))  // 0 -> CatM1; 2 -> CatM1&NBIoT
     return false;
 
@@ -112,9 +117,9 @@ bool BG95_nwkRegister()
     return false;
 
 
-//  //set APN
-//  if (!getBG95response("AT+CGDCONT=1,\"IP\",\"VIP.IOT\"\r\n", "OK", response, 3000))
-//    return false;
+  //set APN
+	if (!getBG95response("AT+CGDCONT=1,\"IP\",\"mtsiot\"\r\n", "OK", response, 3000))
+	  return false;
 
   
   //  error reporting
@@ -182,10 +187,11 @@ bool BG95_TxRxUDP(char payload[], char server_IP[], uint16_t port)
 
   sprintf(cmd, "AT+QISEND=2,%d,\"%s\",%d\r\n", strlen(payload), server_IP, port);
   getBG95response(cmd, ">", response, 3000);
-  getBG95response(payload, "+QIURC: \"recv\",2", response, 5000);
-
-  if (!getBG95response("AT+QIRD=2\r\n", "OK", response, 5000))
-    return false;
+  getBG95response(payload, "SEND OK", response, 5000);
+  // ovo ispod je OK ako ocekujem od servera neki odgovor, pa da ga posle citam sa AT+QIRD
+  //getBG95response(payload, "+QIURC: \"recv\",2", response, 5000);
+  //if (!getBG95response("AT+QIRD=2\r\n", "OK", response, 5000))
+  //  return false;
 
   if (!getBG95response("AT+QICLOSE=2\r\n", "OK", response, 3000))
     return false;
