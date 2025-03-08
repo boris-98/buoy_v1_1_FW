@@ -22,12 +22,13 @@ uint8_t appPort = 2;
 uint8_t confirmedNbTrials = 4;
 
 // Function to prepare LoRaWAN transmission frame
-void prepareTxFrame(uint8_t port, char *payload) {
+void prepareTxFrame(uint8_t port, char *payload, size_t payload_len) {
     // appData je definisan kao uint8_t tj. niz bajtova
     // njegova maks. velicina je definisana 242
     
-    appDataSize = sizeof(payload);  // PROVERI KOLIKO ISPADNE
-    memcpy(&appData, &payload, sizeof(payload));
+    appDataSize = payload_len;  // PROVERI KOLIKO ISPADNE -> 103
+    Serial.println("\nPAYLOAD: " + String(payload) + "\nPAYLOAD_LEN: " + String(payload_len));
+    memcpy(&appData, payload, payload_len);
 /*
     uint8_t index = 0;
     memcpy(&appData[index], &timestamp, sizeof(timestamp));  index += sizeof(timestamp);

@@ -116,7 +116,7 @@ void loop()
         EC.send_read_cmd();   // 600ms
         delay(600);
         receive_and_print_reading(EC);
-
+        
         // prepare the readings for local/remove saving
         DateTime now = DS3231M.now();  // get the current time
         orp_val = ORP.get_last_received_reading();
@@ -138,14 +138,14 @@ void loop()
              rtd_val);
 
         // prepare a payload for LoRa & NB-IoT with the readings
-        snprintf(payload, sizeof(payload), "nbiot_test,board=buoyV1_1,packet=udp ORP=%.3f,PH=%.3f,DO=%.3f,EC=%.3f,RTD=%.3f,UNIXUTC=%d",
+        snprintf(payload, sizeof(payload), "testpacket,board=buoyV1_1,packet=udp ORP=%.3f,PH=%.3f,DO=%.3f,EC=%.3f,RTD=%.3f,UNIXUTC=%d",
             orp_val, ph_val, do_val, ec_val, rtd_val, timestamp);
 
         // save the new readings to the SD card
         appendFile(SD, filePath, newCsvRow); 
 
         // send the readings via LoRa
-        prepareTxFrame(appPort, payload);
+        prepareTxFrame(appPort, payload, strlen(payload));
         LoRaWAN.send();  
 
         // send the readings via NB-IoT
@@ -160,8 +160,7 @@ void loop()
         // Schedule next packet transmission
         txDutyCycleTime = appTxDutyCycle + randr(-APP_TX_DUTYCYCLE_RND, APP_TX_DUTYCYCLE_RND);
         LoRaWAN.cycle(txDutyCycleTime);
-        deviceState = DEVICE_STATE_SLEEP;
-         
+        deviceState = DEVICE_STATE_SLEEP; 
         Serial.println("Going to SLEEP state");
         break;
       }
